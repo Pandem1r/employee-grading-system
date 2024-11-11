@@ -37,3 +37,20 @@ th a {
 th a:hover {
     text-decoration: underline;
 }
+
+table {
+    background-color: white; /* Установите белый фон для таблицы */
+}
+
+th, td {
+    background-color: white; /* Установите белый фон для заголовков и ячеек */
+}
+
+a {
+    color: black; /* Устанавливаем цвет текста ссылок в черный */
+    text-decoration: none; /* Убираем подчеркивание */
+}
+
+a:hover {
+    text-decoration: underline; /* Убираем подчеркивание при наведении, если хотите */
+}

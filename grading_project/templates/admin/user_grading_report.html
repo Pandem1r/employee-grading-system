@@ -16,6 +16,7 @@
         <th>Норматив в баллах</th>
         <th>Выполненная работа</th>
         <th>Баллы</th>
+        <th>Статус</th>
       </tr>
     </thead>
     <tbody>
@@ -25,6 +26,7 @@
           <td>{{ grading.used_standard.standard_in_points }}</td>
           <td>{{ grading.work_done }}</td>
           <td>{{ grading.rating }}</td>
+          <td>{{ grading.status}}</td>
         </tr>
       {% endfor %}
     </tbody>

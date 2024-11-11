@@ -11,6 +11,11 @@ function autoResizeTextarea(textarea) {
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
+function toggleUserWorks(username) {
+    let worksSection = document.getElementById('works-' + username);
+    worksSection.style.display = worksSection.style.display === 'none' ? 'table-row' : 'none';
+}
+
 // Автоматически подгоняем текстовое поле при загрузке страницы
 window.onload = function() {
     document.querySelectorAll('textarea').forEach(function (textarea) {
