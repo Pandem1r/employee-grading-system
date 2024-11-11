@@ -11,7 +11,8 @@ function autoResizeTextarea(textarea) {
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
-function toggleUserWorks(username) {
+function toggleUserWorks(event, username) {
+    event.preventDefault();  // Предотвращает перемещение вверх
     let worksSection = document.getElementById('works-' + username);
     worksSection.style.display = worksSection.style.display === 'none' ? 'table-row' : 'none';
 }

@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from . import models, info_table, admin
 from django.contrib.auth.models import User
+from django.contrib import messages
+from .models import Grading
 
 
 def home_page(request):
@@ -95,3 +97,12 @@ def get_excel_function(request):
         profiles = models.Profile.objects.filter(id__in=profiles_ids)
         admin.export_selected_profiles(request, profiles)
     return admin.export_selected_profiles(request, profiles)
+
+
+def approve_user_function(request):
+    if request.method == 'POST':
+        grading_ids = request.POST.getlist('grading_ids[]')  # Получаем все переданные ID
+        print("grading_ids:", grading_ids)  # Проверка в консоли, какие ID переданы
+        if grading_ids:  # Обновляем статус только если ID есть
+            models.Grading.objects.filter(id__in=grading_ids).update(status='approved')
+    return redirect('home')

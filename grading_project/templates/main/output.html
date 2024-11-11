@@ -3,123 +3,129 @@
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 <script src="{% static 'js/scripts.js' %}"></script>
 
+<!-- Форма для сохранения данных (для учителя и инспектора) -->
 <form method="POST" action="{% url 'save-form' %}">
     {% csrf_token %}
 
     {% if info.user_role == 'Teacher' %}
-    <table border="3">
-        <tr>
-            <th><a href="?sort_by=name&order={{ current_order }}">Наименование</a></th>
-            <th><a href="?sort_by=normative&order={{ current_order }}">Норматив</a></th>
-            <th><a href="?sort_by=work_done&order={{ current_order }}">Выполненная работа</a></th>
-            <th><a href="?sort_by=points&order={{ current_order }}">Баллы</a></th>
-            <th><a href="?sort_by=status&order_stage={{ current_stage|add:1 }}">Статус</a></th>
-        </tr>
+        <table border="3">
+            <tr>
+                <th><a href="?sort_by=name&order={{ current_order }}">Наименование</a></th>
+                <th><a href="?sort_by=normative&order={{ current_order }}">Норматив</a></th>
+                <th><a href="?sort_by=work_done&order={{ current_order }}">Выполненная работа</a></th>
+                <th><a href="?sort_by=points&order={{ current_order }}">Баллы</a></th>
+                <th><a href="?sort_by=status&order_stage={{ current_stage|add:1 }}">Статус</a></th>
+            </tr>
+            {% for table in info.sorted_gradings %}
+                <tr>
+                    <td>{{ table.used_standard }}</td>
+                    <td>{{ table.used_standard.standard_in_points }}</td>
+                    <td>
+                        <textarea name="work_done-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}"
+                                  placeholder="{{ table.work_done }}">{{ table.work_done }}</textarea>
+                    </td>
+                    <td>
+                        <input type="number" name="points-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}"
+                               placeholder="{{ table.rating }}" value="{{ table.rating }}" step="0.01">
+                    </td>
+                    <td>{{ table.get_status_display }}</td>
+                </tr>
+            {% endfor %}
+        </table>
 
-        {% for table in info.sorted_gradings %}
-        <tr>
-            <th>{{ table.used_standard }}</th>
-            <th>{{ table.used_standard.standard_in_points }}</th>
-            <th>
-                <textarea
-                    name="work_done-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}"
-                    placeholder="{{ table.work_done }}">{{ table.work_done }}</textarea>
-            </th>
-            <th>
-                <input type="number"
-                       name="points-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}"
-                       placeholder="{{ table.rating }}"
-                       value="{{ table.rating }}"
-                       step="0.01">
-            </th>
-            <th>{{ table.get_status_display }}</th>
-        </tr>
-        {% endfor %}
-    </table>
+        <!-- Кнопка сохранения для учителей -->
+        <button type="submit">Сохранить</button>
     {% endif %}
 
     {% if info.user_role == 'Inspector' %}
-    <table border="3">
-        <tr>
-            <th><a href="?sort_by=responsible&order={{ current_order }}">Ответственный за ввод данных</a></th>
-            <th><a href="?sort_by=faculty&order={{ current_order }}">Факультет</a></th>
-        </tr>
-        {% for teacher in info.controlled_users %}
-        <tr>
-            <td>
-                <strong>
-                    <a href="#" onclick="toggleUserWorks('{{ teacher.user.username }}')">
-                        {{ teacher.user.first_name }} {{ teacher.user.last_name }}
-                    </a>
-                </strong>
-            </td>
-            <td>{{ teacher.faculties|join:", " }}</td>
-        </tr>
-        <tr id="works-{{ teacher.user.username }}" style="display: none;">
-            <td colspan="2">
-                <table border="2">
-                    <tr>
-                        <th>Наименование</th>
-                        <th>Норматив</th>
-                        <th>Выполненная работа</th>
-                        <th>Баллы</th>
-                        <th>Статус</th>
-                    </tr>
-                    {% for table in info.sorted_controlled_teachers_gradings %}
-                        {% if table.user.user == teacher.user %}
-                        <tr>
-                            <td>{{ table.used_standard }}</td>
-                            <td>{{ table.used_standard.standard_in_points }}</td>
-                            <td>
-                                <textarea name="work_done-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}"
-                                          placeholder="{{ table.work_done }}">{{ table.work_done }}</textarea>
-                            </td>
-                            <td>
-                                <input type="number"
-                                       name="points-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}"
-                                       placeholder="{{ table.rating }}"
-                                       value="{{ table.rating }}"
-                                       step="0.01">
-                            </td>
-                            <td>
-                                <select id="status" name="status-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}">
-                                    {% for value, display in status_choices %}
-                                        <option value="{{ value }}"
-                                                {% if value == table.status %} selected {% endif %}>
-                                            {{ display }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </table>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+        <table border="3">
+            <tr>
+                <th>Ответственный за ввод данных</th>
+                <th>Факультет</th>
+            </tr>
+            {% for teacher in info.controlled_users %}
+                <tr>
+                    <td>
+                        <strong><a href="#" onclick="toggleUserWorks(event, '{{ teacher.user.username }}')">
+                            {{ teacher.user.first_name }} {{ teacher.user.last_name }}
+                        </a></strong>
+                    </td>
+                    <td>{{ teacher.faculties|join:", " }}</td>
+                </tr>
+                <tr id="works-{{ teacher.user.username }}" style="display: none;">
+                    <td colspan="2">
+                        <table border="2">
+                            <tr>
+                                <th>Наименование</th>
+                                <th>Норматив</th>
+                                <th>Выполненная работа</th>
+                                <th>Баллы</th>
+                                <th>Статус</th>
+                            </tr>
+                            {% for table in info.sorted_controlled_teachers_gradings %}
+                                {% if table.user.user == teacher.user %}
+                                    <tr>
+                                        <td>{{ table.used_standard }}</td>
+                                        <td>{{ table.used_standard.standard_in_points }}</td>
+                                        <td>
+                                            <textarea name="work_done-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}"
+                                                      placeholder="{{ table.work_done }}">{{ table.work_done }}</textarea>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="points-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}"
+                                                   placeholder="{{ table.rating }}" value="{{ table.rating }}" step="0.01">
+                                        </td>
+                                        <td>
+                                            <select id="status" name="status-!SePaRaToR!-{{ table.user.user.username }}-!SePaRaToR!-{{ table.used_standard }}">
+                                                {% for value, display in status_choices %}
+                                                    <option value="{{ value }}" {% if value == table.status %} selected {% endif %}>
+                                                        {{ display }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </table>
 
-    <button type="submit">Сохранить</button>
-</form>
+                        <!-- Отдельная форма для одобрения работ пользователя -->
+                        <form method="POST" action="{% url 'approve-user' %}">
+                            {% csrf_token %}
+                            {% for table in info.sorted_controlled_teachers_gradings %}
+                                {% if table.user.user == teacher.user %}
+                                    <input type="hidden" name="grading_ids[]" value="{{ table.id }}">
+                                {% endif %}
+                            {% endfor %}
+                            <button type="submit">Одобрить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
 
-<form method="POST" action="{% url 'approve-all' %}">
-    {% csrf_token %}
-    {% if info.user_role == 'Inspector' %}
-        {% for table in info.sorted_controlled_teachers_gradings %}
-            <input type="hidden" name="grading_ids" value="{{ table.id }}">
-        {% endfor %}
-    <button type="submit">Одобрить все</button>
-    {% endif %}
-</form>
+        <!-- Кнопки для инспектора -->
+        <button type="submit">Сохранить</button>
 
-<form method="POST" action="{% url 'get-excel' %}">
-    {% csrf_token %}
-    {% if info.user_role == 'Inspector' %}
-        {% for table in info.sorted_controlled_teachers_gradings %}
-            <input type="hidden" name="profiles_ids" value="{{ table.id }}">
-        {% endfor %}
-    <button type="submit">Вывод Excel</button>
+        <!-- Форма для одобрения всех записей -->
+        <form method="POST" action="{% url 'approve-all' %}">
+        {% csrf_token %}
+        {% if info.user_role == 'Inspector' %}
+            {% for table in info.sorted_controlled_teachers_gradings %}
+                <input type="hidden" name="grading_ids" value="{{ table.id }}">
+            {% endfor %}
+        <button type="submit">Одобрить все</button>
+        {% endif %}
+        </form>
+
+
+        <!-- Форма для вывода Excel -->
+        <form method="POST" action="{% url 'get-excel' %}">
+            {% csrf_token %}
+            {% for table in info.sorted_controlled_teachers_gradings %}
+                <input type="hidden" name="profiles_ids" value="{{ table.id }}">
+            {% endfor %}
+            <button type="submit">Вывод Excel</button>
+        </form>
     {% endif %}
 </form>
