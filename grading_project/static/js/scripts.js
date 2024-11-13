@@ -12,10 +12,19 @@ function autoResizeTextarea(textarea) {
 }
 
 function toggleUserWorks(event, username) {
-    event.preventDefault();  // Предотвращает перемещение вверх
+    event.preventDefault();
     let worksSection = document.getElementById('works-' + username);
-    worksSection.style.display = worksSection.style.display === 'none' ? 'table-row' : 'none';
+    let isHidden = worksSection.style.display === 'none';
+
+    // Показать или скрыть строку
+    worksSection.style.display = isHidden ? 'table-row' : 'none';
+
+    // Если секция стала видимой, применить autoResizeTextarea к текстовым полям
+    if (isHidden) {
+        worksSection.querySelectorAll('textarea').forEach(autoResizeTextarea);
+    }
 }
+
 
 // Автоматически подгоняем текстовое поле при загрузке страницы
 window.onload = function() {
